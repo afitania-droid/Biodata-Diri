@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biodata Diri - Portofolio & Curriculum Vitae</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Variabel Tema Warna Dinamis */
+        :root {
+            --theme-primary: #2563eb;       /* Biru Profesional (Default) */
+            --theme-primary-hover: #1d4ed8;
+            --theme-light: #eff6ff;
+            --theme-border: #bfdbfe;
+            --theme-text: #1e40af;
+        }
+
+        [data-theme="emerald"] {
+            --theme-primary: #059669;       /* Hijau Emerald */
+            --theme-primary-hover: #047857;
+            --theme-light: #ecfdf5;
+            --theme-border: #a7f3d0;
+            --theme-text: #065f46;
+        }
+
+        [data-theme="slate"] {
+            --theme-primary: #334155;       /* Abu-abu Minimalis */
+            --theme-primary-hover: #1e293b;
+            --theme-light: #f8fafc;
+            --theme-border: #cbd5e1;
+            --theme-text: #0f172a;
+        }
+
+        /* Utilitas Kustom Berbasis Tema */
+        .bg-theme-primary { background-color: var(--theme-primary); }
+        .hover\:bg-theme-primary-hover:hover { background-color: var(--theme-primary-hover); }
+        .bg-theme-light { background-color: var(--theme-light); }
+        .border-theme { border-color: var(--theme-border); }
+        .text-theme { color: var(--theme-text); }
+        .text-theme-primary { color: var(--theme-primary); }
+
+        /* Styling Mode Edit */
+        .editing-active [contenteditable="true"] {
+            outline: 2px dashed var(--theme-primary);
+            outline-offset: 3px;
+            background-color: var(--theme-light);
+            border-radius: 0.375rem;
+            padding: 2px 6px;
+            transition: all 0.2s ease;
+        }
+        .editing-active [contenteditable="true"]:focus {
+            outline: 2px solid var(--theme-primary);
+            background-color: #ffffff;
+        }
+
+        /* Pengaturan Cetak / Simpan PDF (@media print) */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            .print-break-inside {
+                break-inside: avoid;
+            }
+            /* Memastikan warna latar belakang tercetak */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col justify-between selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- Notifikasi Toast (Pengganti alert) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 no-print pointer-events-none"></div>
+
+    <!-- Bilah Kontrol Atas (Toolbar Interaktif) -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm no-print">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Pilihan Tema Warna -->
+            <div class="flex items-center gap-2.5">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 hidden sm:inline">Tema:</span>
+                <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-full border border-slate-200">
+                    <button onclick="setTheme('blue')" title="Biru Profesional" class="w-6 h-6 rounded-full bg-blue-600 ring-2 ring-offset-1 ring-blue-600 transition-transform hover:scale-110 focus:outline-none" id="btn-theme-blue"></button>
+                    <button onclick="setTheme('emerald')" title="Hijau Emerald" class="w-6 h-6 rounded-full bg-emerald-600 ring-offset-1 ring-emerald-600 transition-transform hover:scale-110 focus:outline-none" id="btn-theme-emerald"></button>
+                    <button onclick="setTheme('slate')" title="Abu-abu Minimalis" class="w-6 h-6 rounded-full bg-slate-700 ring-offset-1 ring-slate-700 transition-transform hover:scale-110 focus:outline-none" id="btn-theme-slate"></button>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi Utama -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Toggle Mode Edit -->
+                <button id="btn-toggle-edit" onclick="toggleEditMode()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold text-white bg-theme-primary hover:bg-theme-primary-hover shadow-sm transition-all cursor-pointer">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    <span id="text-toggle-edit">Edit Biodata</span>
+                </button>
+
+                <!-- Cetak / PDF -->
+                <button onclick="printBiodata()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition-all cursor-pointer" title="Cetak atau Simpan sebagai PDF">
+                    <i data-lucide="printer" class="w-4 h-4 text-slate-600"></i>
+                    <span class="hidden sm:inline">Cetak / PDF</span>
+                </button>
+
+                <!-- Unduh HTML -->
+                <button onclick="downloadHTML()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition-all cursor-pointer" title="Unduh File HTML yang Sudah Diisi">
+                    <i data-lucide="download" class="w-4 h-4 text-slate-600"></i>
+                    <span class="hidden sm:inline">Unduh HTML</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Banner Petunjuk Mode Edit -->
+        <div id="edit-banner" class="hidden bg-amber-50 border-t border-amber-200 px-4 py-2 text-center text-xs sm:text-sm text-amber-800 font-medium">
+            <span class="inline-flex items-center gap-1.5">
+                <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                <span><strong>Mode Edit Aktif:</strong> Klik pada teks mana saja untuk mengubah isi biodata, atau klik foto profil untuk mengganti gambar. Klik <strong>"Selesai Edit"</strong> jika sudah.</span>
+            </span>
+        </div>
+    </header>
+
+    <!-- Kontainer Utama Dokumen Biodata -->
+    <main class="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 print-container">
+        <article id="biodata-document" class="bg-white rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden print-container">
+            
+            <!-- 1. HEADER / HERO BIODATA DIRI -->
+            <div class="relative bg-theme-primary text-white px-6 sm:px-10 py-8 sm:py-10 transition-colors duration-300">
+                <!-- Dekorasi Latar Belakang Halus -->
+                <div class="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+                    <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <circle cx="90" cy="10" r="35" fill="currentColor" />
+                        <circle cx="10" cy="90" r="25" fill="currentColor" />
+                    </svg>
+                </div>
+
+                <div class="relative z-10 flex flex-col sm:flex-row items-center sm:items-center gap-6 sm:gap-8 text-center sm:text-left">
+                    <!-- Foto Profil dengan Fitur Upload -->
+                    <div class="relative group shrink-0">
+                        <div class="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-4 border-white/30 shadow-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                            <img id="profile-image" 
+                                 src="https://placehold.co/300x300/e2e8f0/475569?text=Foto+Profil" 
+                                 alt="Foto Profil" 
+                                 onerror="this.src='https://placehold.co/300x300/e2e8f0/475569?text=Foto+Profil'"
+                                 class="w-full h-full object-cover">
+                        </div>
+                        
+                        <!-- Tombol Upload Foto (Muncul saat hover atau saat Mode Edit aktif) -->
+                        <label for="upload-photo" id="upload-photo-label" class="no-print absolute inset-0 bg-slate-900/60 rounded-2xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                            <i data-lucide="camera" class="w-6 h-6 mb-1"></i>
+                            <span class="text-xs font-semibold">Ganti Foto</span>
+                        </label>
+                        <input type="file" id="upload-photo" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                    </div>
+
+                    <!-- Judul Dokumen, Nama Lengkap & Nama Panggilan -->
+                    <div class="flex-1 space-y-2">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white/95 text-xs font-bold tracking-widest uppercase">
+                            <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                            <span>BIODATA DIRI</span>
+                        </div>
+                        <h1 id="hero-fullname" class="editable-field font-display text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+                            [Isi nama lengkap]
+                        </h1>
+                        <p class="text-white/85 text-sm sm:text-base font-medium flex items-center justify-center sm:justify-start gap-2">
+                            <span>Nama Panggilan:</span>
+                            <span id="hero-nickname" class="editable-field font-semibold text-white bg-white/15 px-2.5 py-0.5 rounded-lg">[Isi nama panggilan]</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ISI DOKUMEN BIODATA -->
+            <div class="p-6 sm:p-10 space-y-10">
+
+                <!-- 2. BAGIAN DATA PRIBADI -->
+                <section class="print-break-inside">
+                    <div class="flex items-center gap-3 pb-3 mb-5 border-b-2 border-slate-100">
+                        <div class="w-9 h-9 rounded-xl bg-theme-light text-theme-primary flex items-center justify-center shrink-0">
+                            <i data-lucide="id-card" class="w-5 h-5"></i>
+                        </div>
+                        <h2 class="font-display text-lg sm:text-xl font-bold text-slate-800 tracking-tight">Data Pribadi</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm sm:text-base">
+                        <!-- Nama Lengkap -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1">
+                            <span class="text-slate-500 font-medium shrink-0">Nama Lengkap</span>
+                            <span id="data-fullname" oninput="syncHeroName('fullname')" class="editable-field font-semibold text-slate-800 sm:text-right">[Isi nama lengkap]</span>
+                        </div>
+
+                        <!-- Nama Panggilan -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1">
+                            <span class="text-slate-500 font-medium shrink-0">Nama Panggilan</span>
+                            <span id="data-nickname" oninput="syncHeroName('nickname')" class="editable-field font-semibold text-slate-800 sm:text-right">[Isi nama panggilan]</span>
+                        </div>
+
+                        <!-- Tempat, Tanggal Lahir -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1">
+                            <span class="text-slate-500 font-medium shrink-0">Tempat, Tanggal Lahir</span>
+                            <span class="editable-field font-semibold text-slate-800 sm:text-right">[Kota, Tanggal Bulan Tahun]</span>
+                        </div>
+
+                        <!-- Jenis Kelamin -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1">
+                            <span class="text-slate-500 font-medium shrink-0">Jenis Kelamin</span>
+                            <span class="editable-field font-semibold text-slate-800 sm:text-right">[Laki-laki / Perempuan]</span>
+                        </div>
+
+                        <!-- Agama -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1">
+                            <span class="text-slate-500 font-medium shrink-0">Agama</span>
+                            <span class="editable-field font-semibold text-slate-800 sm:text-right">[Isi agama]</span>
+                        </div>
+
+                        <!-- Kewarganegaraan -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1">
+                            <span class="text-slate-500 font-medium shrink-0">Kewarganegaraan</span>
+                            <span class="editable-field font-semibold text-slate-800 sm:text-right">[Indonesia / Lainnya]</span>
+                        </div>
+
+                        <!-- Status Pernikahan -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1">
+                            <span class="text-slate-500 font-medium shrink-0">Status Pernikahan</span>
+                            <span class="editable-field font-semibold text-slate-800 sm:text-right">[Belum Menikah / Menikah / Lainnya]</span>
+                        </div>
+
+                        <!-- Nomor Telepon / WA -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1">
+                            <span class="text-slate-500 font-medium shrink-0">Nomor Telepon / WA</span>
+                            <span class="editable-field font-semibold text-slate-800 sm:text-right">[Isi nomor aktif]</span>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2.5 gap-1 md:col-span-2">
+                            <span class="text-slate-500 font-medium shrink-0">Email</span>
+                            <span class="editable-field font-semibold text-theme-primary sm:text-right">[Isi alamat email aktif]</span>
+                        </div>
+
+                        <!-- Alamat Lengkap -->
+                        <div class="flex flex-col border-b border-slate-100 pb-2.5 gap-1.5 md:col-span-2">
+                            <span class="text-slate-500 font-medium">Alamat Lengkap</span>
+                            <span class="editable-field font-semibold text-slate-800 leading-relaxed">[Jalan, No., RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten, Kode Pos]</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. BAGIAN RIWAYAT PENDIDIKAN -->
+                <section class="print-break-inside">
+                    <div class="flex items-center justify-between gap-3 pb-3 mb-5 border-b-2 border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-theme-light text-theme-primary flex items-center justify-center shrink-0">
+                                <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                            </div>
+                            <h2 class="font-display text-lg sm:text-xl font-bold text-slate-800 tracking-tight">Riwayat Pendidikan</h2>
+                        </div>
+                        
+                        <!-- Tombol Tambah Pendidikan (Hanya tampil saat Mode Edit) -->
+                        <button type="button" onclick="addEducationItem()" class="edit-only-control hidden no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-theme-light text-theme border border-theme hover:opacity-80 transition-opacity cursor-pointer">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>Tambah Pendidikan</span>
+                        </button>
+                    </div>
+
+                    <div id="education-list" class="space-y-4">
+                        <!-- Item Pendidikan 1 -->
+                        <div class="education-item group relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 hover:border-slate-300 transition-colors">
+                            <div class="space-y-1 flex-1 pr-6">
+                                <div class="inline-block px-2.5 py-0.5 rounded-md bg-theme-light text-theme text-xs font-bold">
+                                    <span class="editable-field">[Tahun Masuk – Tahun Lulus]</span>
+                                </div>
+                                <h3 class="editable-field font-bold text-slate-800 text-base">
+                                    [Nama Sekolah/Perguruan Tinggi, Jurusan/Program Studi]
+                                </h3>
+                            </div>
+                            <button type="button" onclick="removeParentItem(this)" title="Hapus baris ini" class="edit-only-control hidden no-print absolute top-3 right-3 p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. BAGIAN PENGALAMAN & KEAHLIAN (OPSIONAL) -->
+                <section class="print-break-inside">
+                    <div class="flex items-center justify-between gap-3 pb-3 mb-5 border-b-2 border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-theme-light text-theme-primary flex items-center justify-center shrink-0">
+                                <i data-lucide="briefcase" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-display text-lg sm:text-xl font-bold text-slate-800 tracking-tight">
+                                    Pengalaman & Keahlian <span class="text-sm font-normal text-slate-400">(Opsional)</span>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Pengalaman Kerja / Organisasi -->
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                                    <i data-lucide="building-2" class="w-4 h-4 text-theme-primary"></i>
+                                    <span>Pengalaman Kerja / Organisasi</span>
+                                </h3>
+                                <button type="button" onclick="addExperienceItem()" class="edit-only-control hidden no-print inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-theme-light text-theme border border-theme hover:opacity-80 transition-opacity cursor-pointer">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    <span>Tambah Pengalaman</span>
+                                </button>
+                            </div>
+                            
+                            <div id="experience-list" class="space-y-3">
+                                <div class="experience-item relative p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 pr-10">
+                                    <p class="editable-field font-semibold text-slate-800 text-sm sm:text-base">
+                                        [Isi posisi, nama instansi/organisasi, dan periode]
+                                    </p>
+                                    <button type="button" onclick="removeParentItem(this)" title="Hapus baris ini" class="edit-only-control hidden no-print absolute top-3 right-3 p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Keahlian / Kemampuan (Tag / Badge) -->
+                        <div>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2 mb-3">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-theme-primary"></i>
+                                <span>Keahlian / Kemampuan</span>
+                            </h3>
+                            
+                            <div id="skills-container" class="flex flex-wrap items-center gap-2">
+                                <span class="skill-badge inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-theme-light text-theme border border-theme text-sm font-semibold">
+                                    <span class="editable-field">[Isi keahlian utama]</span>
+                                    <button type="button" onclick="removeSkillBadge(this)" title="Hapus keahlian" class="edit-only-control hidden no-print text-rose-500 hover:text-rose-700 ml-1 cursor-pointer">
+                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </span>
+                            </div>
+
+                            <!-- Input Tambah Keahlian Baru (Muncul saat Mode Edit) -->
+                            <div class="edit-only-control hidden no-print mt-3 flex items-center gap-2 max-w-md">
+                                <input type="text" id="new-skill-input" placeholder="Ketik keahlian baru lalu klik Tambah..." 
+                                       onkeypress="if(event.key === 'Enter'){ event.preventDefault(); addSkillBadge(); }"
+                                       class="flex-1 px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button type="button" onclick="addSkillBadge()" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white bg-theme-primary hover:bg-theme-primary-hover transition-colors cursor-pointer">
+                                    + Tambah
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hobi -->
+                        <div class="pt-2 border-t border-slate-100">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2 mb-2">
+                                <i data-lucide="heart" class="w-4 h-4 text-theme-primary"></i>
+                                <span>Hobi</span>
+                            </h3>
+                            <p class="editable-field font-semibold text-slate-800 text-sm sm:text-base">
+                                [Isi hobi]
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Footer Dokumen -->
+            <footer class="bg-slate-50 border-t border-slate-200/80 px-6 sm:px-10 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+                <span>Dokumen Biodata Diri Resmi</span>
+                <span id="last-updated">Diperbarui secara digital</span>
+            </footer>
+        </article>
+    </main>
+
+    <!-- Footer Aplikasi (Tidak tercetak) -->
+    <div class="text-center text-xs text-slate-400 pb-8 no-print">
+        Gunakan tombol <strong>Edit Biodata</strong> di bagian atas untuk mengisi data Anda, lalu simpan sebagai PDF atau unduh file HTML.
+    </div>
+
+    <!-- JavaScript Interaktif -->
+    <script>
+        let isEditMode = false;
+
+        // Inisialisasi ikon Lucide saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            updateDateStamp();
+        });
+
+        // Memperbarui tanggal hari ini di footer dokumen
+        function updateDateStamp() {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date().toLocaleDateString('id-ID', options);
+            const footerEl = document.getElementById('last-updated');
+            if (footerEl) {
+                footerEl.textContent = `Dibuat / Diperbarui: ${today}`;
+            }
+        }
+
+        // Menampilkan notifikasi toast halus
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-slate-800';
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `<span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Animasi masuk
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            // Hapus setelah 3 detik
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Mengubah Tema Warna
+        function setTheme(themeName) {
+            const htmlEl = document.documentElement;
+            if (themeName === 'blue') {
+                htmlEl.removeAttribute('data-theme');
+            } else {
+                htmlEl.setAttribute('data-theme', themeName);
+            }
+
+            // Update indikator ring pada tombol tema
+            ['blue', 'emerald', 'slate'].forEach(t => {
+                const btn = document.getElementById(`btn-theme-${t}`);
+                if (t === themeName) {
+                    btn.classList.add('ring-2');
+                } else {
+                    btn.classList.remove('ring-2');
+                }
+            });
+
+            const names = { blue: 'Biru Profesional', emerald: 'Hijau Emerald', slate: 'Abu-abu Minimalis' };
+            showToast(`Tema diubah ke ${names[themeName]}`);
+        }
+
+        // Mengaktifkan / Menonaktifkan Mode Edit
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const doc = document.getElementById('biodata-document');
+            const btnText = document.getElementById('text-toggle-edit');
+            const btnToggle = document.getElementById('btn-toggle-edit');
+            const editBanner = document.getElementById('edit-banner');
+            const editableFields = document.querySelectorAll('.editable-field');
+            const editControls = document.querySelectorAll('.edit-only-control');
+            const photoLabel = document.getElementById('upload-photo-label');
+
+            if (isEditMode) {
+                doc.classList.add('editing-active');
+                btnText.textContent = 'Selesai Edit';
+                btnToggle.classList.replace('bg-theme-primary', 'bg-emerald-600');
+                editBanner.classList.remove('hidden');
+                
+                editableFields.forEach(el => {
+                    el.setAttribute('contenteditable', 'true');
+                });
+                
+                editControls.forEach(el => {
+                    el.classList.remove('hidden');
+                });
+
+                // Tampilkan indikator ganti foto lebih jelas saat mode edit
+                photoLabel.classList.remove('opacity-0');
+                photoLabel.classList.add('opacity-90');
+
+                showToast('Mode Edit aktif. Silakan klik teks untuk mengedit.');
+            } else {
+                doc.classList.remove('editing-active');
+                btnText.textContent = 'Edit Biodata';
+                btnToggle.classList.replace('bg-emerald-600', 'bg-theme-primary');
+                editBanner.classList.add('hidden');
+                
+                editableFields.forEach(el => {
+                    el.removeAttribute('contenteditable');
+                });
+                
+                editControls.forEach(el => {
+                    el.classList.add('hidden');
+                });
+
+                photoLabel.classList.add('opacity-0');
+                photoLabel.classList.remove('opacity-90');
+
+                showToast('Perubahan disimpan di halaman.', 'success');
+            }
+        }
+
+        // Sinkronisasi Nama Lengkap & Panggilan antara Header dan Tabel Data Pribadi
+        function syncHeroName(type) {
+            if (type === 'fullname') {
+                const val = document.getElementById('data-fullname').innerText;
+                document.getElementById('hero-fullname').innerText = val;
+            } else if (type === 'nickname') {
+                const val = document.getElementById('data-nickname').innerText;
+                document.getElementById('hero-nickname').innerText = val;
+            }
+        }
+
+        // Juga sinkronkan jika pengguna mengedit langsung di bagian Hero
+        document.getElementById('hero-fullname').addEventListener('input', function() {
+            document.getElementById('data-fullname').innerText = this.innerText;
+        });
+        document.getElementById('hero-nickname').addEventListener('input', function() {
+            document.getElementById('data-nickname').innerText = this.innerText;
+        });
+
+        // Menangani Upload Foto Profil
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showToast('Harap pilih file gambar (JPG, PNG, WEBP).');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('profile-image');
+                img.src = e.target.result;
+                showToast('Foto profil berhasil diperbarui!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Menambah Baris Riwayat Pendidikan Baru
+        function addEducationItem() {
+            const list = document.getElementById('education-list');
+            const newItem = document.createElement('div');
+            newItem.className = 'education-item group relative flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 hover:border-slate-300 transition-colors';
+            
+            const editableAttr = isEditMode ? 'contenteditable="true"' : '';
+            const hiddenClass = isEditMode ? '' : 'hidden';
+
+            newItem.innerHTML = `
+                <div class="space-y-1 flex-1 pr-6">
+                    <div class="inline-block px-2.5 py-0.5 rounded-md bg-theme-light text-theme text-xs font-bold">
+                        <span class="editable-field" ${editableAttr}>[Tahun Masuk – Tahun Lulus]</span>
+                    </div>
+                    <h3 class="editable-field font-bold text-slate-800 text-base" ${editableAttr}>
+                        [Nama Sekolah/Perguruan Tinggi, Jurusan/Program Studi]
+                    </h3>
+                </div>
+                <button type="button" onclick="removeParentItem(this)" title="Hapus baris ini" class="edit-only-control ${hiddenClass} no-print absolute top-3 right-3 p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            `;
+            list.appendChild(newItem);
+            lucide.createIcons();
+            showToast('Baris pendidikan ditambahkan.');
+        }
+
+        // Menambah Baris Pengalaman Baru
+        function addExperienceItem() {
+            const list = document.getElementById('experience-list');
+            const newItem = document.createElement('div');
+            newItem.className = 'experience-item relative p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 pr-10';
+            
+            const editableAttr = isEditMode ? 'contenteditable="true"' : '';
+            const hiddenClass = isEditMode ? '' : 'hidden';
+
+            newItem.innerHTML = `
+                <p class="editable-field font-semibold text-slate-800 text-sm sm:text-base" ${editableAttr}>
+                    [Isi posisi, nama instansi/organisasi, dan periode]
+                </p>
+                <button type="button" onclick="removeParentItem(this)" title="Hapus baris ini" class="edit-only-control ${hiddenClass} no-print absolute top-3 right-3 p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            `;
+            list.appendChild(newItem);
+            lucide.createIcons();
+            showToast('Baris pengalaman ditambahkan.');
+        }
+
+        // Menambah Tag Keahlian Baru
+        function addSkillBadge() {
+            const input = document.getElementById('new-skill-input');
+            const val = input.value.trim();
+            if (!val) {
+                showToast('Ketik nama keahlian terlebih dahulu.');
+                return;
+            }
+
+            const container = document.getElementById('skills-container');
+            const badge = document.createElement('span');
+            badge.className = 'skill-badge inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-theme-light text-theme border border-theme text-sm font-semibold';
+            
+            const editableAttr = isEditMode ? 'contenteditable="true"' : '';
+            const hiddenClass = isEditMode ? '' : 'hidden';
+
+            // Mencegah injeksi HTML dengan textContent
+            const textSpan = document.createElement('span');
+            textSpan.className = 'editable-field';
+            if (isEditMode) textSpan.setAttribute('contenteditable', 'true');
+            textSpan.textContent = val;
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.title = 'Hapus keahlian';
+            delBtn.className = `edit-only-control ${hiddenClass} no-print text-rose-500 hover:text-rose-700 ml-1 cursor-pointer`;
+            delBtn.onclick = function() { removeSkillBadge(this); };
+            delBtn.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5"></i>';
+
+            badge.appendChild(textSpan);
+            badge.appendChild(delBtn);
+            container.appendChild(badge);
+            
+            input.value = '';
+            lucide.createIcons();
+            showToast(`Keahlian "${val}" ditambahkan.`);
+        }
+
+        // Menghapus Item Pendidikan / Pengalaman
+        function removeParentItem(buttonEl) {
+            const item = buttonEl.closest('.education-item, .experience-item');
+            if (item) {
+                item.remove();
+                showToast('Item dihapus.');
+            }
+        }
+
+        // Menghapus Badge Keahlian
+        function removeSkillBadge(buttonEl) {
+            const badge = buttonEl.closest('.skill-badge');
+            if (badge) {
+                badge.remove();
+                showToast('Keahlian dihapus.');
+            }
+        }
+
+        // Mencetak / Menyimpan ke PDF
+        function printBiodata() {
+            // Matikan mode edit sementara sebelum mencetak agar garis putus-putus hilang
+            if (isEditMode) {
+                toggleEditMode();
+            }
+            setTimeout(() => {
+                window.print();
+            }, 150);
+        }
+
+        // Mengunduh File HTML yang Sudah Diisi Pengguna
+        function downloadHTML() {
+            // Pastikan mode edit dimatikan agar file yang diunduh bersih
+            const wasEditing = isEditMode;
+            if (wasEditing) {
+                toggleEditMode();
+            }
+
+            // Ambil seluruh kode HTML dokumen saat ini
+            const fullHTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            // Buat nama file berdasarkan nama lengkap yang diisi
+            let fileName = document.getElementById('data-fullname').innerText.trim();
+            if (!fileName || fileName === '[Isi nama lengkap]') {
+                fileName = 'biodata-diri';
+            } else {
+                fileName = 'biodata-' + fileName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            }
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast(`File ${fileName}.html berhasil diunduh!`, 'success');
+        }
+    </script>
+</body>
+</html>
